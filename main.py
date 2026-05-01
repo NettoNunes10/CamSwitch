@@ -125,13 +125,20 @@ def switch_to_guest(top_mic):
     if current_scene != config.OBS_SCENES.PTZ2:
         send_win_command('alt+2')
         target_scene = config.OBS_SCENES.PTZ2
+        target_camera = "PTZ1"
+        target_device = config.PTZ_IDS["ptz1"]
+        target_presets = config.PTZ1
     else:
         send_win_command('alt+3')
         target_scene = config.OBS_SCENES.PTZ3
+        target_camera = "PTZ2"
+        target_device = config.PTZ_IDS["ptz2"]
+        target_presets = config.PTZ2
 
-    command = getattr(config.CAM_COMMANDS, top_mic, None)
-    if command and ptz2_cam != top_mic and ptz3_cam != top_mic:
-        send_win_command(command)
+    if ptz2_cam != top_mic and ptz3_cam != top_mic:
+        pan, tilt, zoom = target_presets[top_mic]
+        print(f"[CAM] {target_camera} -> {top_mic}: pan={pan}, tilt={tilt}, zoom={zoom}")
+        move_to_position(target_device, pan, tilt, zoom)
 
     current_mic = top_mic
     print(f'cs: {current_scene} - cm: {current_mic}')

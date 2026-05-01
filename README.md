@@ -32,6 +32,17 @@ Teste movimento absoluto usando o controlador real:
 python test_obsbot_osc.py --device 2 --preset MIC2 --controller
 ```
 
+## Editor de presets
+
+Com o OBSBOT Center aberto e OSC ativo, rode:
+
+```powershell
+python preset_editor.py
+```
+
+Escolha `PTZ1` ou `PTZ2`, mova a camera, ajuste `pan`, `tilt` e `zoom`, e clique em `Salvar preset`.
+Os valores ficam em `presets.json` e sao carregados automaticamente pelo sistema.
+
 ## Executar o sistema
 
 ```powershell
