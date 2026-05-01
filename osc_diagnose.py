@@ -74,7 +74,7 @@ def print_udp_listeners(port):
 
 
 def print_obsbot_processes():
-    print("\n[1b] Procurando processos OBSBOT e portas UDP abertas por eles")
+    print("\n[1b] Procurando processos OBSBOT e portas abertas por eles")
     command = r"""
 $processes = Get-Process | Where-Object { $_.ProcessName -match 'obsbot|obs' }
 if (-not $processes) {
@@ -97,6 +97,19 @@ if ($endpoints) {
   Write-Output ''
   Write-Output 'Nenhuma porta UDP aberta pelos processos encontrados.'
 }
+
+$tcp = Get-NetTCPConnection -ErrorAction SilentlyContinue |
+  Where-Object { $ids -contains $_.OwningProcess } |
+  Select-Object LocalAddress,LocalPort,RemoteAddress,RemotePort,State,OwningProcess
+
+if ($tcp) {
+  Write-Output ''
+  Write-Output 'TCP connections/listeners dos processos encontrados:'
+  $tcp | Format-Table -AutoSize
+} else {
+  Write-Output ''
+  Write-Output 'Nenhuma porta TCP encontrada para os processos encontrados.'
+}
 """
     result = subprocess.run(
         ["powershell", "-NoProfile", "-Command", command],
@@ -105,6 +118,38 @@ if ($endpoints) {
     )
     output = result.stdout.strip() or result.stderr.strip()
     print(output or "Nao foi possivel consultar processos.")
+
+
+def print_obsbot_files():
+    print("\n[1c] Procurando configs/logs recentes do OBSBOT Center")
+    command = r"""
+$roots = @(
+  (Join-Path $env:APPDATA 'OBSBOT Center'),
+  (Join-Path $env:LOCALAPPDATA 'OBSBOT Center'),
+  (Join-Path $env:APPDATA 'obsbot-center'),
+  (Join-Path $env:LOCALAPPDATA 'obsbot-center'),
+  (Join-Path $env:PROGRAMDATA 'OBSBOT Center')
+)
+
+foreach ($root in $roots) {
+  if (Test-Path $root) {
+    Write-Output ''
+    Write-Output "DIR $root"
+    Get-ChildItem -LiteralPath $root -Recurse -File -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -match 'log|config|setting|osc|json|ini|txt|db' } |
+      Sort-Object LastWriteTime -Descending |
+      Select-Object -First 20 FullName,Length,LastWriteTime |
+      Format-Table -AutoSize
+  }
+}
+"""
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-Command", command],
+        capture_output=True,
+        text=True,
+    )
+    output = result.stdout.strip() or result.stderr.strip()
+    print(output or "Nenhuma pasta de config/log encontrada nos locais comuns.")
 
 
 def udp_diag(host, port, device, speed):
@@ -175,6 +220,7 @@ def main():
 
     print_udp_listeners(args.port)
     print_obsbot_processes()
+    print_obsbot_files()
     udp_diag(args.host, args.port, args.device, args.speed)
     if args.tcp:
         tcp_diag(args.host, args.port, args.device, args.speed)
