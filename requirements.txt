@@ -1,0 +1,5 @@
+numpy
+obsws-python
+pywin32
+sounddevice
+
