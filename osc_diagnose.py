@@ -73,6 +73,18 @@ def print_udp_listeners(port):
     print(output or "Nenhum listener UDP encontrado nessa porta.")
 
 
+def candidate_hosts():
+    hosts = ["127.0.0.1", socket.gethostname()]
+    try:
+        for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+            host = info[4][0]
+            if host not in hosts:
+                hosts.append(host)
+    except Exception:
+        pass
+    return hosts
+
+
 def print_obsbot_processes():
     print("\n[1b] Procurando processos OBSBOT e portas abertas por eles")
     command = r"""
@@ -215,13 +227,19 @@ def main():
     parser.add_argument("--port", type=int, default=config.CAMERA_PORT)
     parser.add_argument("--device", type=int, default=2)
     parser.add_argument("--speed", type=int, default=35)
+    parser.add_argument("--scan-hosts", action="store_true")
     parser.add_argument("--tcp", action="store_true")
     args = parser.parse_args()
 
     print_udp_listeners(args.port)
     print_obsbot_processes()
     print_obsbot_files()
-    udp_diag(args.host, args.port, args.device, args.speed)
+    if args.scan_hosts:
+        print("\n[2] Varrendo hosts candidatos")
+        for host in candidate_hosts():
+            udp_diag(host, args.port, args.device, args.speed)
+    else:
+        udp_diag(args.host, args.port, args.device, args.speed)
     if args.tcp:
         tcp_diag(args.host, args.port, args.device, args.speed)
 

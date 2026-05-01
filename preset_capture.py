@@ -6,15 +6,11 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 import config
-from camera_controller import (
-    GET_GIMBAL_POSITION,
-    SELECT_DEVICE,
-)
+from camera_controller import SELECT_DEVICE
 
 
 MIC_NAMES = ["MIC1", "MIC2", "MIC3"]
 CAMERA_NAMES = ["PTZ1", "PTZ2"]
-ZOOM_INFO = "/OBSBOT/WebCam/General/ZoomInfo"
 
 
 def osc_string(value):
@@ -189,8 +185,6 @@ class PresetCapture(tk.Tk):
         self._log(f"Selecionando device {self._device()}")
 
         self.client.send(SELECT_DEVICE, [self._device()], delay=0.2)
-        self.client.send(GET_GIMBAL_POSITION, [0], delay=0.2)
-        self.client.send(ZOOM_INFO, [0], delay=0.2)
 
         messages = self.client.receive_for(2.5)
         found_position = False

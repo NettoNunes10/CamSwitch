@@ -39,6 +39,12 @@ python osc_diagnose.py --device 2
 ```
 
 Esse comando verifica se existe listener UDP na porta configurada, envia a sequencia usada pelo layout TouchOSC oficial e imprime qualquer resposta OSC recebida.
+Se o OBSBOT Center mostrar algo como `osc.udp://NOME-DO-PC:16284/` no log, teste tambem:
+
+```powershell
+python osc_diagnose.py --device 2 --host NOME-DO-PC
+python osc_diagnose.py --device 2 --scan-hosts
+```
 
 ## Editor de presets
 
