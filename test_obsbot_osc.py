@@ -7,6 +7,7 @@ import config
 
 
 SET_GIMBAL_DEGREE = "/OBSBOT/WebCam/General/SetGimMotorDegree"
+CONNECTED = "/OBSBOT/WebCam/General/Connected"
 SELECT_DEVICE = "/OBSBOT/WebCam/General/SelectDevice"
 GET_GIMBAL_POSITION = "/OBSBOT/WebCam/General/GetGimPosInfo"
 SET_GIMBAL_LEFT = "/OBSBOT/WebCam/General/SetGimbalLeft"
@@ -50,6 +51,21 @@ def test_nudge(sock, ip, port, device, speed):
     send_udp(sock, ip, port, SET_GIMBAL_RIGHT, [0], delay=0.2)
 
 
+def stop_all(sock, ip, port, device):
+    send_udp(sock, ip, port, SELECT_DEVICE, [device], delay=0.25)
+    for address in [SET_GIMBAL_LEFT, SET_GIMBAL_RIGHT, SET_GIMBAL_UP, SET_GIMBAL_DOWN]:
+        send_udp(sock, ip, port, address, [0], delay=0.1)
+
+
+def recover(sock, ip, port, device, speed):
+    send_udp(sock, ip, port, CONNECTED, [1], delay=0.25)
+    send_udp(sock, ip, port, SELECT_DEVICE, [device], delay=0.4)
+    send_udp(sock, ip, port, WAKE_SLEEP, [0], delay=0.8)
+    send_udp(sock, ip, port, WAKE_SLEEP, [1], delay=0.8)
+    stop_all(sock, ip, port, device)
+    test_nudge(sock, ip, port, device, speed)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Teste direto de comandos OSC UDP no OBSBOT Center."
@@ -64,6 +80,7 @@ def main():
     parser.add_argument("--wake", action="store_true")
     parser.add_argument("--sleep", action="store_true")
     parser.add_argument("--nudge", action="store_true")
+    parser.add_argument("--recover", action="store_true")
     parser.add_argument("--sweep", action="store_true")
     parser.add_argument("--get-pos", action="store_true")
     parser.add_argument(
@@ -129,6 +146,10 @@ def main():
 
     if args.nudge:
         test_nudge(sock, args.ip, args.port, args.device, args.speed)
+        return
+
+    if args.recover:
+        recover(sock, args.ip, args.port, args.device, args.speed)
         return
 
     send_udp(sock, args.ip, args.port, SELECT_DEVICE, [args.device], delay=0.4)

@@ -9,7 +9,6 @@ import config
 from camera_controller import (
     GET_GIMBAL_POSITION,
     SELECT_DEVICE,
-    WAKE_SLEEP,
 )
 
 
@@ -190,7 +189,6 @@ class PresetCapture(tk.Tk):
         self._log(f"Selecionando device {self._device()}")
 
         self.client.send(SELECT_DEVICE, [self._device()], delay=0.2)
-        self.client.send(WAKE_SLEEP, [1], delay=0.2)
         self.client.send(GET_GIMBAL_POSITION, [0], delay=0.2)
         self.client.send(ZOOM_INFO, [0], delay=0.2)
 
