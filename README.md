@@ -32,6 +32,14 @@ Teste movimento absoluto usando o controlador real:
 python test_obsbot_osc.py --device 2 --preset MIC2 --controller
 ```
 
+Diagnostico de OSC quando o OBSBOT Center para de responder:
+
+```powershell
+python osc_diagnose.py --device 2
+```
+
+Esse comando verifica se existe listener UDP na porta configurada, envia a sequencia usada pelo layout TouchOSC oficial e imprime qualquer resposta OSC recebida.
+
 ## Editor de presets
 
 Com o OBSBOT Center aberto e OSC ativo, rode:
