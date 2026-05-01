@@ -73,6 +73,40 @@ def print_udp_listeners(port):
     print(output or "Nenhum listener UDP encontrado nessa porta.")
 
 
+def print_obsbot_processes():
+    print("\n[1b] Procurando processos OBSBOT e portas UDP abertas por eles")
+    command = r"""
+$processes = Get-Process | Where-Object { $_.ProcessName -match 'obsbot|obs' }
+if (-not $processes) {
+  Write-Output 'Nenhum processo com nome OBS/OBSBOT encontrado.'
+  exit
+}
+
+$processes | Select-Object Id,ProcessName,Path | Format-Table -AutoSize
+
+$ids = $processes.Id
+$endpoints = Get-NetUDPEndpoint -ErrorAction SilentlyContinue |
+  Where-Object { $ids -contains $_.OwningProcess } |
+  Select-Object LocalAddress,LocalPort,OwningProcess
+
+if ($endpoints) {
+  Write-Output ''
+  Write-Output 'UDP endpoints dos processos encontrados:'
+  $endpoints | Format-Table -AutoSize
+} else {
+  Write-Output ''
+  Write-Output 'Nenhuma porta UDP aberta pelos processos encontrados.'
+}
+"""
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-Command", command],
+        capture_output=True,
+        text=True,
+    )
+    output = result.stdout.strip() or result.stderr.strip()
+    print(output or "Nao foi possivel consultar processos.")
+
+
 def udp_diag(host, port, device, speed):
     print(f"\n[2] Teste UDP para {host}:{port}")
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -99,6 +133,9 @@ def udp_diag(host, port, device, speed):
             try:
                 data, source = sock.recvfrom(4096)
             except socket.timeout:
+                break
+            except ConnectionResetError as exc:
+                print(f"<- Windows informou porta UDP fechada ou recusada: {exc}")
                 break
             try:
                 parsed = parse_packet(data)
@@ -137,6 +174,7 @@ def main():
     args = parser.parse_args()
 
     print_udp_listeners(args.port)
+    print_obsbot_processes()
     udp_diag(args.host, args.port, args.device, args.speed)
     if args.tcp:
         tcp_diag(args.host, args.port, args.device, args.speed)
