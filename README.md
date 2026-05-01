@@ -43,6 +43,15 @@ python preset_editor.py
 Escolha `PTZ1` ou `PTZ2`, mova a camera, ajuste `pan`, `tilt` e `zoom`, e clique em `Salvar preset`.
 Os valores ficam em `presets.json` e sao carregados automaticamente pelo sistema.
 
+Se preferir ajustar a camera pelo proprio OBSBOT Center e apenas tentar capturar a posicao atual:
+
+```powershell
+python preset_capture.py
+```
+
+Escolha a PTZ e o microfone, ajuste pan/tilt/zoom no OBSBOT Center e clique em `Capturar atual`.
+O programa registra as respostas OSC no log e salva em `presets.json` quando conseguir ler pan/tilt.
+
 ## Executar o sistema
 
 ```powershell
