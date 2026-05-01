@@ -46,6 +46,15 @@ python osc_diagnose.py --device 2 --host NOME-DO-PC
 python osc_diagnose.py --device 2 --scan-hosts
 ```
 
+Se o log do OBSBOT Center nao mostrar mais `OSC URL` ou `start osc init`, colete status/reset seguro:
+
+```powershell
+python obsbot_repair.py --status
+python obsbot_repair.py --kill --backup-config --reset-config
+```
+
+Depois abra o OBSBOT Center de novo, reative OSC e rode `python osc_diagnose.py --device 2`.
+
 ## Editor de presets
 
 Com o OBSBOT Center aberto e OSC ativo, rode:
