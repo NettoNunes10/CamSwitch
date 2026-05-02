@@ -137,10 +137,13 @@ def print_obsbot_files():
     command = r"""
 $roots = @(
   (Join-Path $env:APPDATA 'OBSBOT Center'),
+  (Join-Path $env:APPDATA 'OBSBOT_Center'),
   (Join-Path $env:LOCALAPPDATA 'OBSBOT Center'),
+  (Join-Path $env:LOCALAPPDATA 'OBSBOT_Center'),
   (Join-Path $env:APPDATA 'obsbot-center'),
   (Join-Path $env:LOCALAPPDATA 'obsbot-center'),
-  (Join-Path $env:PROGRAMDATA 'OBSBOT Center')
+  (Join-Path $env:PROGRAMDATA 'OBSBOT Center'),
+  (Join-Path $env:PROGRAMDATA 'OBSBOT_Center')
 )
 
 foreach ($root in $roots) {
@@ -184,7 +187,11 @@ def udp_diag(host, port, device, speed):
     for address, values, delay in sequence:
         packet = osc_packet(address, values)
         print(f"-> {address} {values} ({len(packet)} bytes)")
-        sock.sendto(packet, (host, port))
+        try:
+            sock.sendto(packet, (host, port))
+        except OSError as exc:
+            print(f"<- Falha ao enviar para {host}:{port}: {exc}")
+            return
         deadline = time.monotonic() + delay
         while time.monotonic() < deadline:
             try:

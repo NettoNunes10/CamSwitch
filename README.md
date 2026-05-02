@@ -54,6 +54,13 @@ python obsbot_repair.py --kill --backup-config --reset-config
 ```
 
 Depois abra o OBSBOT Center de novo, reative OSC e rode `python osc_diagnose.py --device 2`.
+Se a tela mostrar OSC configurado mas `global.ini` tiver `OSC=false`, ative diretamente:
+
+```powershell
+python obsbot_repair.py --kill --enable-osc --host 127.0.0.1 --port 16284
+```
+
+Depois abra o OBSBOT Center e confira se o log mostra `OSC URL`.
 
 ## Editor de presets
 

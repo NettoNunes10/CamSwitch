@@ -117,6 +117,45 @@ def backup_config_dirs(reset=False):
                 shutil.copy2(target, backup)
 
 
+def set_ini_value(lines, key, value):
+    prefix = f"{key}="
+    for index, line in enumerate(lines):
+        if line.strip().lower().startswith(prefix.lower()):
+            lines[index] = f"{key}={value}"
+            return
+    lines.insert(0, f"{key}={value}")
+
+
+def enable_osc(host, port, method):
+    roots = find_existing_roots()
+    if not roots:
+        print("Nenhuma pasta OBSBOT_Center encontrada para configurar OSC.")
+        return
+
+    changed = False
+    for root in roots:
+        ini = root / "global.ini"
+        if not ini.exists():
+            continue
+
+        backup = backup_path(ini)
+        shutil.copy2(ini, backup)
+        print(f"Backup: {ini} -> {backup}")
+
+        text = read_text(ini)
+        lines = text.splitlines()
+        set_ini_value(lines, "OSC", "true")
+        set_ini_value(lines, "OSCConnectMethod", str(method))
+        set_ini_value(lines, "OSCHostIp", host)
+        set_ini_value(lines, "OSCReceivePort", str(port))
+        ini.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        print(f"OSC ativado em {ini}: host={host}, port={port}, method={method}")
+        changed = True
+
+    if not changed:
+        print("Nenhum global.ini encontrado para configurar OSC.")
+
+
 def kill_obsbot():
     command = (
         "Get-Process OBSBOT_Center,OBSBOT_Main -ErrorAction SilentlyContinue | "
@@ -137,6 +176,15 @@ def main():
         action="store_true",
         help="Renomeia a pasta config do OBSBOT Center para forcar recriacao.",
     )
+    parser.add_argument("--enable-osc", action="store_true", help="Ativa OSC=true no global.ini.")
+    parser.add_argument("--host", default="127.0.0.1", help="Host OSC para gravar no global.ini.")
+    parser.add_argument("--port", type=int, default=16284, help="Porta OSC para gravar no global.ini.")
+    parser.add_argument(
+        "--method",
+        type=int,
+        default=0,
+        help="OSCConnectMethod. 0 costuma ser UDP Server.",
+    )
     parser.add_argument("--kill", action="store_true", help="Fecha processos OBSBOT Center/Main.")
     args = parser.parse_args()
 
@@ -146,6 +194,8 @@ def main():
         backup_config_dirs(reset=False)
     if args.reset_config:
         backup_config_dirs(reset=True)
+    if args.enable_osc:
+        enable_osc(args.host, args.port, args.method)
     if args.status or not any(vars(args).values()):
         show_status()
 
