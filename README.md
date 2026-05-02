@@ -57,6 +57,12 @@ Quando uma variante bater, teste isoladamente:
 python test_obsbot_osc.py --camera PTZ2 --mic MIC1 --controller --transform invert-pan
 ```
 
+Para comparar comando enviado com a posicao reportada depois do movimento:
+
+```powershell
+python preset_roundtrip.py --camera PTZ2 --mic MIC1
+```
+
 Diagnostico de OSC quando o OBSBOT Center para de responder:
 
 ```powershell
