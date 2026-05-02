@@ -66,6 +66,13 @@ def recover(sock, ip, port, device, speed):
     test_nudge(sock, ip, port, device, speed)
 
 
+def camera_name_from_device(device):
+    for key, value in config.PTZ_IDS.items():
+        if value == device:
+            return key.upper()
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Teste direto de comandos OSC UDP no OBSBOT Center."
@@ -95,8 +102,8 @@ def main():
     )
     parser.add_argument(
         "--preset",
-        choices=sorted(config.MIC_POSITIONS.keys()),
-        help="Usa pan/tilt/zoom de config.MIC_POSITIONS.",
+        choices=["LOCUTOR", "MIC1", "MIC2", "MIC3"],
+        help="Preset por microfone. Para MIC1-3, usa presets.json quando conseguir identificar a PTZ pelo device.",
     )
     parser.add_argument(
         "--camera",
@@ -127,9 +134,23 @@ def main():
         )
 
     if args.preset:
-        pan, tilt, preset_zoom = config.MIC_POSITIONS[args.preset]
-        if zoom is None:
-            zoom = preset_zoom
+        camera_name = camera_name_from_device(args.device)
+        if args.preset != "LOCUTOR" and camera_name:
+            pan, tilt, preset_zoom = config.camera_preset(camera_name, args.preset)
+            if zoom is None:
+                zoom = preset_zoom
+            print(
+                f"Preset JSON: {camera_name}/{args.preset} -> "
+                f"device={args.device}, pan={pan}, tilt={tilt}, zoom={zoom}"
+            )
+        else:
+            pan, tilt, preset_zoom = config.MIC_POSITIONS[args.preset]
+            if zoom is None:
+                zoom = preset_zoom
+            print(
+                f"Preset legacy MIC_POSITIONS: {args.preset} -> "
+                f"device={args.device}, pan={pan}, tilt={tilt}, zoom={zoom}"
+            )
 
     if args.controller:
         from camera_controller import move_to_position

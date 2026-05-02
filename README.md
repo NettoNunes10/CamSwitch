@@ -32,6 +32,8 @@ Teste movimento absoluto usando o controlador real:
 python test_obsbot_osc.py --device 2 --preset MIC2 --controller
 ```
 
+Com `--device 1` ou `--device 2`, `--preset MIC1/MIC2/MIC3` tambem usa o `presets.json`, mapeando `device 1 -> PTZ1` e `device 2 -> PTZ2`.
+
 Para testar exatamente os presets salvos pelo capturador/editor em `presets.json`:
 
 ```powershell
