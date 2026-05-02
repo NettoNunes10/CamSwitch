@@ -15,6 +15,42 @@ from process_manager import ensure_obs_running
 
 
 APP_DIR = Path(__file__).resolve().parent
+PYTHON314_DIR = Path(r"C:\Users\MASSA STREAM\AppData\Local\Programs\Python\Python314")
+PYTHONW_EXE = PYTHON314_DIR / "pythonw.exe"
+PYTHON_EXE = PYTHON314_DIR / "python.exe"
+
+
+def python_window_executable():
+    if PYTHONW_EXE.exists():
+        return str(PYTHONW_EXE)
+    return sys.executable
+
+
+def python_console_executable():
+    if PYTHON_EXE.exists():
+        return str(PYTHON_EXE)
+
+    executable = Path(sys.executable)
+    if executable.name.lower() == "pythonw.exe":
+        python_exe = executable.with_name("python.exe")
+        if python_exe.exists():
+            return str(python_exe)
+
+    return sys.executable
+
+
+def run_script(script_name, *, console=False):
+    flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+    executable = python_console_executable() if console else python_window_executable()
+
+    if console:
+        flags |= getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
+
+    return subprocess.Popen(
+        [executable, str(APP_DIR / script_name)],
+        cwd=str(APP_DIR),
+        creationflags=flags,
+    )
 
 
 class CamSwitchTray:
@@ -28,6 +64,7 @@ class CamSwitchTray:
                 pystray.MenuItem("Iniciar sistema", self.start_system),
                 pystray.MenuItem("Parar sistema", self.stop_system),
                 pystray.MenuItem("Configurar", self.open_settings),
+                pystray.MenuItem("Capturar posicoes", self.open_preset_capture),
                 pystray.MenuItem("Abrir OBS/OBSBOT", self.ensure_apps),
                 pystray.MenuItem("Sair", self.exit_app),
             ),
@@ -63,11 +100,7 @@ class CamSwitchTray:
         if self.process and self.process.poll() is None:
             return
         self.ensure_apps()
-        self.process = subprocess.Popen(
-            [sys.executable, str(APP_DIR / "main.py")],
-            cwd=str(APP_DIR),
-            creationflags=getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0),
-        )
+        self.process = run_script("main.py", console=True)
 
     def stop_system(self, *_args):
         if self.process and self.process.poll() is None:
@@ -76,6 +109,9 @@ class CamSwitchTray:
 
     def open_settings(self, *_args):
         threading.Thread(target=SettingsWindow, daemon=True).start()
+
+    def open_preset_capture(self, *_args):
+        run_script("preset_capture.py")
 
     def exit_app(self, *_args):
         self.stop_system()
@@ -127,8 +163,9 @@ class SettingsWindow:
 
         buttons = ttk.Frame(frame)
         buttons.grid(row=row, column=0, columnspan=3, sticky="e", pady=(12, 0))
-        ttk.Button(buttons, text="Salvar", command=self._save).grid(row=0, column=0, padx=(0, 6))
-        ttk.Button(buttons, text="Fechar", command=self.root.destroy).grid(row=0, column=1)
+        ttk.Button(buttons, text="Capturar posicoes", command=self._open_preset_capture).grid(row=0, column=0, padx=(0, 6))
+        ttk.Button(buttons, text="Salvar", command=self._save).grid(row=0, column=1, padx=(0, 6))
+        ttk.Button(buttons, text="Fechar", command=self.root.destroy).grid(row=0, column=2)
 
     def _value_for_key(self, key):
         if "." not in key:
@@ -172,6 +209,9 @@ class SettingsWindow:
 
         save_settings(settings)
         messagebox.showinfo("CamSwitch", "Configuracao salva. Reinicie o sistema para aplicar tudo.")
+
+    def _open_preset_capture(self):
+        run_script("preset_capture.py")
 
 
 if __name__ == "__main__":
