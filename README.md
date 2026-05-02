@@ -61,6 +61,13 @@ python obsbot_repair.py --kill --enable-osc --host 127.0.0.1 --port 16284
 ```
 
 Depois abra o OBSBOT Center e confira se o log mostra `OSC URL`.
+Para fazer a checagem e reinicio automaticamente:
+
+```powershell
+python obsbot_repair.py --ensure-osc --host 127.0.0.1 --port 16284
+```
+
+O `main.py` tambem faz essa verificacao no inicio quando `AUTO_REPAIR_OBSBOT_OSC = True` em `config.py`.
 
 ## Editor de presets
 

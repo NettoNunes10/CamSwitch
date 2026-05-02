@@ -7,6 +7,8 @@ import win32con
 # ---------- Cameras / OSC ----------
 CAMERA_IP = "127.0.0.1"
 CAMERA_PORT = 16284
+AUTO_REPAIR_OBSBOT_OSC = True
+OBSBOT_OSC_METHOD = 0
 PRESET_FILE = Path(__file__).with_name("presets.json")
 
 PTZ_IDS = {

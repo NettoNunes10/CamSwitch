@@ -4,6 +4,8 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
+from obsbot_osc_guard import ensure_obsbot_osc
+
 
 KEYWORDS = ("osc", "16284", "start osc", "unknown path", "zmq", "task is busy")
 
@@ -177,6 +179,11 @@ def main():
         help="Renomeia a pasta config do OBSBOT Center para forcar recriacao.",
     )
     parser.add_argument("--enable-osc", action="store_true", help="Ativa OSC=true no global.ini.")
+    parser.add_argument(
+        "--ensure-osc",
+        action="store_true",
+        help="Ativa OSC se necessario e reinicia o OBSBOT Center automaticamente.",
+    )
     parser.add_argument("--host", default="127.0.0.1", help="Host OSC para gravar no global.ini.")
     parser.add_argument("--port", type=int, default=16284, help="Porta OSC para gravar no global.ini.")
     parser.add_argument(
@@ -187,6 +194,16 @@ def main():
     )
     parser.add_argument("--kill", action="store_true", help="Fecha processos OBSBOT Center/Main.")
     args = parser.parse_args()
+    requested_action = any(
+        [
+            args.status,
+            args.backup_config,
+            args.reset_config,
+            args.enable_osc,
+            args.ensure_osc,
+            args.kill,
+        ]
+    )
 
     if args.kill:
         kill_obsbot()
@@ -196,7 +213,9 @@ def main():
         backup_config_dirs(reset=True)
     if args.enable_osc:
         enable_osc(args.host, args.port, args.method)
-    if args.status or not any(vars(args).values()):
+    if args.ensure_osc:
+        ensure_obsbot_osc(args.host, args.port, method=args.method, restart=True)
+    if args.status or not requested_action:
         show_status()
 
 

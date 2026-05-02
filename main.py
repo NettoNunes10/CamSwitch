@@ -4,6 +4,7 @@ from queue import Queue, Empty
 from datetime import datetime, time as dtime, timedelta
 
 import config
+from obsbot_osc_guard import ensure_obsbot_osc
 from mic_monitor import MicMonitor
 from camera_controller import move_to_position, send_win_command, wake_up, sleep
 from obs_control import OBSController
@@ -229,6 +230,14 @@ def run_operational_loop():
 # ==============================
 if __name__ == "__main__":
     print("Iniciando sistema com threads...")
+
+    if config.AUTO_REPAIR_OBSBOT_OSC:
+        ensure_obsbot_osc(
+            config.CAMERA_IP,
+            config.CAMERA_PORT,
+            method=config.OBSBOT_OSC_METHOD,
+            restart=True,
+        )
 
     mic_monitor = MicMonitor(config.MIC_DEVICES, callback=audio_callback)
     mic_monitor.start()
