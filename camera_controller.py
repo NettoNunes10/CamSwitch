@@ -114,7 +114,6 @@ def move_to_position(cam, goal_pan, goal_tilt, zoom=1, speed=DEFAULT_MOVE_SPEED)
     """Move a camera selecionada para pan/tilt absolutos via OBSBOT Center OSC."""
     select_device(cam)
     send_cmd(WAKE_SLEEP, [1], delay=0.3)
-    stop_gimbal()
     send_cmd(SET_GIMBAL_DEGREE, [speed, goal_pan, goal_tilt], delay=0.5)
 
     if zoom is not None:

@@ -66,6 +66,14 @@ def recover(sock, ip, port, device, speed):
     test_nudge(sock, ip, port, device, speed)
 
 
+def send_absolute_position(sock, ip, port, device, pan, tilt, zoom, speed):
+    send_udp(sock, ip, port, SELECT_DEVICE, [device], delay=0.3)
+    send_udp(sock, ip, port, WAKE_SLEEP, [1], delay=0.3)
+    send_udp(sock, ip, port, SET_GIMBAL_DEGREE, [speed, pan, tilt], delay=0.5)
+    if zoom is not None:
+        send_udp(sock, ip, port, SET_ZOOM, [zoom])
+
+
 def camera_name_from_device(device):
     for key, value in config.PTZ_IDS.items():
         if value == device:
@@ -248,15 +256,10 @@ def main():
         recover(sock, args.ip, args.port, args.device, args.speed)
         return
 
-    send_udp(sock, args.ip, args.port, SELECT_DEVICE, [args.device], delay=0.4)
-
     if args.direct_degree:
         send_udp(sock, args.ip, args.port, SET_GIMBAL_DEGREE, [args.device, args.speed, pan, tilt])
     else:
-        send_udp(sock, args.ip, args.port, SET_GIMBAL_DEGREE, [args.speed, pan, tilt])
-
-    if zoom is not None:
-        send_udp(sock, args.ip, args.port, SET_ZOOM, [zoom])
+        send_absolute_position(sock, args.ip, args.port, args.device, pan, tilt, zoom, args.speed)
 
     print("Comando enviado. Se nao moveu, rode com --nudge e depois --sweep.")
 

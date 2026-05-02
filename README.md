@@ -63,6 +63,8 @@ Para comparar comando enviado com a posicao reportada depois do movimento:
 python preset_roundtrip.py --camera PTZ2 --mic MIC1
 ```
 
+O envio absoluto usado pelo sistema principal segue a mesma sequencia validada pelo `preset_roundtrip.py`: `SelectDevice`, `WakeSleep`, `SetGimMotorDegree`, `SetZoom`.
+
 Diagnostico de OSC quando o OBSBOT Center para de responder:
 
 ```powershell
