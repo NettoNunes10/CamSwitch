@@ -73,6 +73,32 @@ def camera_name_from_device(device):
     return None
 
 
+def transform_position(pan, tilt, transform):
+    transforms = {
+        "normal": (pan, tilt),
+        "invert-pan": (-pan, tilt),
+        "invert-tilt": (pan, -tilt),
+        "invert-both": (-pan, -tilt),
+        "swap": (tilt, pan),
+        "swap-invert-pan": (-tilt, pan),
+        "swap-invert-tilt": (tilt, -pan),
+        "swap-invert-both": (-tilt, -pan),
+    }
+    return transforms[transform]
+
+
+TRANSFORMS = [
+    "normal",
+    "invert-pan",
+    "invert-tilt",
+    "invert-both",
+    "swap",
+    "swap-invert-pan",
+    "swap-invert-tilt",
+    "swap-invert-both",
+]
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Teste direto de comandos OSC UDP no OBSBOT Center."
@@ -84,6 +110,17 @@ def main():
     parser.add_argument("--pan", type=int, default=20)
     parser.add_argument("--tilt", type=int, default=0)
     parser.add_argument("--zoom", type=int)
+    parser.add_argument(
+        "--transform",
+        choices=TRANSFORMS,
+        default="normal",
+        help="Transforma pan/tilt antes de enviar para testar convencao de eixos.",
+    )
+    parser.add_argument(
+        "--try-transforms",
+        action="store_true",
+        help="Testa todas as variacoes comuns de pan/tilt com pausa entre elas.",
+    )
     parser.add_argument("--wake", action="store_true")
     parser.add_argument("--sleep", action="store_true")
     parser.add_argument("--nudge", action="store_true")
@@ -154,6 +191,22 @@ def main():
 
     if args.controller:
         from camera_controller import move_to_position
+
+        if args.try_transforms:
+            original_pan, original_tilt = pan, tilt
+            for transform in TRANSFORMS:
+                test_pan, test_tilt = transform_position(original_pan, original_tilt, transform)
+                print(
+                    f"\nTransform {transform}: "
+                    f"pan={test_pan}, tilt={test_tilt}, zoom={zoom}"
+                )
+                move_to_position(args.device, test_pan, test_tilt, zoom, speed=args.speed)
+                input("Confira a camera e pressione Enter para testar o proximo...")
+            return
+
+        pan, tilt = transform_position(pan, tilt, args.transform)
+        if args.transform != "normal":
+            print(f"Transform aplicado: {args.transform} -> pan={pan}, tilt={tilt}")
 
         try:
             move_to_position(args.device, pan, tilt, zoom, speed=args.speed)

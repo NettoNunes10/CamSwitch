@@ -45,6 +45,18 @@ python test_obsbot_osc.py --camera PTZ2 --mic MIC2 --controller
 python test_obsbot_osc.py --camera PTZ2 --mic MIC3 --controller
 ```
 
+Se a camera se move mas nao bate exatamente com a posicao capturada, teste convencoes de eixo:
+
+```powershell
+python test_obsbot_osc.py --camera PTZ2 --mic MIC1 --controller --try-transforms
+```
+
+Quando uma variante bater, teste isoladamente:
+
+```powershell
+python test_obsbot_osc.py --camera PTZ2 --mic MIC1 --controller --transform invert-pan
+```
+
 Diagnostico de OSC quando o OBSBOT Center para de responder:
 
 ```powershell
