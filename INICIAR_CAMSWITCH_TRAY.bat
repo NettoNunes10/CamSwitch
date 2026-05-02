@@ -1,4 +1,6 @@
 @echo off
 cd /d "%~dp0"
-python tray_app.py
-
+set "PYTHON=python"
+if exist ".venv\Scripts\python.exe" set "PYTHON=.venv\Scripts\python.exe"
+"%PYTHON%" tray_app.py
+if errorlevel 1 pause
