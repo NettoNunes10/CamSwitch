@@ -78,7 +78,16 @@ def show_status():
 
 def backup_path(path):
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    return path.with_name(f"{path.name}.bak-{stamp}")
+    candidate = path.with_name(f"{path.name}.bak-{stamp}")
+    if not candidate.exists():
+        return candidate
+
+    index = 2
+    while True:
+        next_candidate = path.with_name(f"{path.name}.bak-{stamp}-{index}")
+        if not next_candidate.exists():
+            return next_candidate
+        index += 1
 
 
 def backup_config_dirs(reset=False):
@@ -87,9 +96,15 @@ def backup_config_dirs(reset=False):
         print("Nenhuma pasta OBSBOT_Center encontrada para backup/reset.")
         return
 
+    seen_targets = set()
     for root in roots:
         config_dir = root / "config"
         target = config_dir if config_dir.exists() else root
+        resolved = target.resolve()
+        if resolved in seen_targets:
+            continue
+        seen_targets.add(resolved)
+
         backup = backup_path(target)
         print(f"Backup: {target} -> {backup}")
 
