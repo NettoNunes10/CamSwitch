@@ -77,6 +77,10 @@ DEFAULT_PTZ2 = {
 
 PTZ1 = {mic: values[:] for mic, values in DEFAULT_PTZ1.items()}
 PTZ2 = {mic: values[:] for mic, values in DEFAULT_PTZ2.items()}
+CAMERA_PRESETS = {
+    "PTZ1": PTZ1,
+    "PTZ2": PTZ2,
+}
 
 
 def load_saved_presets():
@@ -89,10 +93,18 @@ def load_saved_presets():
         print(f"[CONFIG] Erro ao carregar presets.json: {exc}")
         return
 
-    if isinstance(data.get("PTZ1"), dict):
-        PTZ1.update({mic: list(values) for mic, values in data["PTZ1"].items()})
-    if isinstance(data.get("PTZ2"), dict):
-        PTZ2.update({mic: list(values) for mic, values in data["PTZ2"].items()})
+    for camera_name, presets in CAMERA_PRESETS.items():
+        saved_presets = data.get(camera_name)
+        if not isinstance(saved_presets, dict):
+            continue
+
+        for mic, values in saved_presets.items():
+            if mic == "LOCUTOR":
+                continue
+            if not isinstance(values, list) or len(values) != 3:
+                print(f"[CONFIG] Preset invalido ignorado: {camera_name}/{mic}={values}")
+                continue
+            presets[mic] = [int(values[0]), int(values[1]), int(values[2])]
 
 
 def save_presets_file(data):
@@ -103,10 +115,16 @@ def save_presets_file(data):
 
 
 def camera_presets():
-    return {
-        "PTZ1": PTZ1,
-        "PTZ2": PTZ2,
-    }
+    return CAMERA_PRESETS
+
+
+def camera_device(camera_name):
+    key = camera_name.lower()
+    return PTZ_IDS[key]
+
+
+def camera_preset(camera_name, mic):
+    return CAMERA_PRESETS[camera_name][mic]
 
 
 load_saved_presets()

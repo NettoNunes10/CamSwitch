@@ -32,6 +32,17 @@ Teste movimento absoluto usando o controlador real:
 python test_obsbot_osc.py --device 2 --preset MIC2 --controller
 ```
 
+Para testar exatamente os presets salvos pelo capturador/editor em `presets.json`:
+
+```powershell
+python test_obsbot_osc.py --camera PTZ1 --mic MIC1 --controller
+python test_obsbot_osc.py --camera PTZ1 --mic MIC2 --controller
+python test_obsbot_osc.py --camera PTZ1 --mic MIC3 --controller
+python test_obsbot_osc.py --camera PTZ2 --mic MIC1 --controller
+python test_obsbot_osc.py --camera PTZ2 --mic MIC2 --controller
+python test_obsbot_osc.py --camera PTZ2 --mic MIC3 --controller
+```
+
 Diagnostico de OSC quando o OBSBOT Center para de responder:
 
 ```powershell

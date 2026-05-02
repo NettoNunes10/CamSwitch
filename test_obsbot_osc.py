@@ -98,11 +98,33 @@ def main():
         choices=sorted(config.MIC_POSITIONS.keys()),
         help="Usa pan/tilt/zoom de config.MIC_POSITIONS.",
     )
+    parser.add_argument(
+        "--camera",
+        choices=sorted(config.camera_presets().keys()),
+        help="Usa presets por camera vindos de presets.json, ex: PTZ1.",
+    )
+    parser.add_argument(
+        "--mic",
+        choices=["MIC1", "MIC2", "MIC3"],
+        help="Microfone do preset salvo em presets.json.",
+    )
     args = parser.parse_args()
 
     pan = args.pan
     tilt = args.tilt
     zoom = args.zoom
+
+    if args.camera or args.mic:
+        if not args.camera or not args.mic:
+            parser.error("--camera e --mic precisam ser usados juntos.")
+        args.device = config.camera_device(args.camera)
+        pan, tilt, preset_zoom = config.camera_preset(args.camera, args.mic)
+        if zoom is None:
+            zoom = preset_zoom
+        print(
+            f"Preset JSON: {args.camera}/{args.mic} -> "
+            f"device={args.device}, pan={pan}, tilt={tilt}, zoom={zoom}"
+        )
 
     if args.preset:
         pan, tilt, preset_zoom = config.MIC_POSITIONS[args.preset]
