@@ -5,6 +5,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from process_manager import is_process_running
+
 
 PROCESS_NAMES = ("OBSBOT_Center", "OBSBOT_Main")
 DEFAULT_METHOD = 0
@@ -98,7 +100,10 @@ def kill_obsbot():
     subprocess.run(["powershell", "-NoProfile", "-Command", command], check=False)
 
 
-def find_obsbot_executable():
+def find_obsbot_executable(custom_path=""):
+    if custom_path and Path(custom_path).exists():
+        return Path(custom_path)
+
     roots = [
         Path(os.environ.get("ProgramFiles", "C:/Program Files")),
         Path(os.environ.get("ProgramFiles(x86)", "C:/Program Files (x86)")),
@@ -116,8 +121,8 @@ def find_obsbot_executable():
     return None
 
 
-def start_obsbot():
-    executable = find_obsbot_executable()
+def start_obsbot(executable_path=""):
+    executable = find_obsbot_executable(executable_path)
     if not executable:
         print("[OBSBOT] Executavel do OBSBOT Center nao encontrado.")
         return False
@@ -139,24 +144,44 @@ def start_obsbot():
     return True
 
 
-def ensure_obsbot_osc(host, port, method=DEFAULT_METHOD, restart=True, wait_after_start=5):
+def ensure_obsbot_osc(
+    host,
+    port,
+    method=DEFAULT_METHOD,
+    restart=True,
+    wait_after_start=5,
+    executable_path="",
+):
     ini = find_global_ini()
     if not ini:
-        print("[OBSBOT] global.ini nao encontrado; abra o OBSBOT Center uma vez.")
-        return False
+        print("[OBSBOT] global.ini nao encontrado; tentando abrir OBSBOT Center.")
+        started = start_obsbot(executable_path)
+        if started:
+            time.sleep(wait_after_start)
+            ini = find_global_ini()
+        if not ini:
+            print("[OBSBOT] global.ini ainda nao encontrado.")
+            return False
 
+    needs_restart = False
     if osc_config_ok(ini, host, port, method):
         print(f"[OBSBOT] OSC ja esta ativo em {host}:{port}.")
+    else:
+        print(f"[OBSBOT] OSC desativado ou divergente em {ini}. Corrigindo...")
+        write_osc_config(ini, host, port, method)
+        needs_restart = True
+
+    if not is_process_running("OBSBOT_Center", "OBSBOT_Main"):
+        print("[OBSBOT] OBSBOT Center fechado. Abrindo...")
+        start_obsbot(executable_path)
+        time.sleep(wait_after_start)
         return True
 
-    print(f"[OBSBOT] OSC desativado ou divergente em {ini}. Corrigindo...")
-    write_osc_config(ini, host, port, method)
-
-    if restart:
+    if restart and needs_restart:
         print("[OBSBOT] Reiniciando OBSBOT Center para aplicar OSC...")
         kill_obsbot()
         time.sleep(1.5)
-        started = start_obsbot()
+        started = start_obsbot(executable_path)
         if started:
             time.sleep(wait_after_start)
 

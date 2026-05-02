@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import win32con
+from app_settings import apply_settings
 
 
 # ---------- Cameras / OSC ----------
@@ -9,6 +10,10 @@ CAMERA_IP = "127.0.0.1"
 CAMERA_PORT = 16284
 AUTO_REPAIR_OBSBOT_OSC = True
 OBSBOT_OSC_METHOD = 0
+OBS_EXECUTABLE = ""
+OBSBOT_EXECUTABLE = ""
+SCHEDULE_START = "17:50"
+SCHEDULE_END = "19:20"
 PRESET_FILE = Path(__file__).with_name("presets.json")
 
 PTZ_IDS = {
@@ -48,6 +53,9 @@ MIC_POSITIONS = {
 OBS_HOST = "localhost"
 OBS_PORT = 4455
 OBS_PASSWORD = ""
+
+
+apply_settings(globals())
 
 
 class OBS_SCENES:

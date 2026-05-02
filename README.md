@@ -124,6 +124,15 @@ O programa registra as respostas OSC no log e salva em `presets.json` quando con
 
 ## Executar o sistema
 
+Modo tray:
+
+```powershell
+python tray_app.py
+```
+
+O icone do CamSwitch fica na bandeja do Windows com opcoes para iniciar/parar o sistema, abrir configuracoes e garantir OBS/OBSBOT.
+Tambem existem `INICIAR_CAMSWITCH_TRAY.bat` e `INICIAR_CAMSWITCH_TRAY_SILENCIOSO.vbs`.
+
 ```powershell
 python main.py
 ```

@@ -5,6 +5,7 @@ from datetime import datetime, time as dtime, timedelta
 
 import config
 from obsbot_osc_guard import ensure_obsbot_osc
+from process_manager import ensure_obs_running
 from mic_monitor import MicMonitor
 from camera_controller import move_to_position, send_win_command, wake_up, sleep
 from obs_control import OBSController
@@ -13,8 +14,13 @@ from obs_control import OBSController
 # ==============================
 # CONFIGURACAO DE HORARIO
 # ==============================
-INICIO = dtime(17, 50)  # 18:00
-FIM = dtime(19, 20)     # 19:00
+def parse_schedule_time(value):
+    hour, minute = value.split(":", 1)
+    return dtime(int(hour), int(minute))
+
+
+INICIO = parse_schedule_time(config.SCHEDULE_START)
+FIM = parse_schedule_time(config.SCHEDULE_END)
 
 LOCUTOR_CONFIRM_TIME = 0.5
 GUEST_CONFIRM_TIME = 1.0
@@ -234,7 +240,10 @@ if __name__ == "__main__":
             config.CAMERA_PORT,
             method=config.OBSBOT_OSC_METHOD,
             restart=True,
+            executable_path=config.OBSBOT_EXECUTABLE,
         )
+
+    ensure_obs_running(config.OBS_EXECUTABLE)
 
     mic_monitor = MicMonitor(config.MIC_DEVICES, callback=audio_callback)
     mic_monitor.start()

@@ -1,5 +1,6 @@
 numpy
 obsws-python
+pillow
+pystray
 pywin32
 sounddevice
-
